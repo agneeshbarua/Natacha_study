@@ -37,8 +37,8 @@ d<-A.oce_dat %>% column_to_rownames('target_id')
 
 #Run from here
 ```{r}
-d<-readRDS("../results_skin/A.oce_dat.RDS")
-A.oce_dat_counts<-readRDS("../results_skin/A.oce_dat_counts.RDS")
+d<-readRDS("./A.oce_dat.RDS")
+A.oce_dat_counts<-readRDS("./A.oce_dat_counts.RDS")
 ```
 
 ### PCA

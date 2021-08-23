@@ -13,7 +13,7 @@ library(edgeR)
 library(DESeq2)
 ```
 
-```{r}
+```{r,eval=F}
 rbind(read_tsv("../results/SSPN7_S1/abundance.tsv") %>% select(target_id,est_counts) %>% mutate(sample="SS_1"),
 read_tsv("../results/SSPN8_S1/abundance.tsv") %>% select(target_id,est_counts) %>% mutate(sample="SS_2"),
 read_tsv("../results/SSPN9_S1/abundance.tsv") %>% select(target_id,est_counts) %>% mutate(sample="SS_3"),
@@ -35,9 +35,15 @@ d %>% saveRDS("../results/A.percula_dat.csv")
 #GGally::ggpairs(log10(d+1))
 ```
 
+#Run from here
+```{r}
+d<-readRDS("./A.percula_dat.RDS")
+A.perula_dat<-readRDS("./A.percula_counts.RDS")
+```
+
+
 ### PCA
 ```{r}
-d<-A.perula_dat %>% column_to_rownames('target_id')
 d <- d[sort(rowSums(d, na.rm = T), decreasing = T, index.return = T)[[2]][1:5000],]
 d <- log(d+1) %>% t() %>% dist()
 fit <- MASS::isoMDS(d, k=2)
