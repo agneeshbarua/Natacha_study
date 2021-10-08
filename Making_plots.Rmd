@@ -1,0 +1,45 @@
+---
+title: "Making_plots"
+author: "Agneesh Barua"
+date: "10/8/2021"
+output: html_document
+---
+```{r,message=F}
+library(tidyverse)
+library(janitor)
+library(ellipse)
+library(edgeR)
+library(DESeq2)
+```
+
+## Get data files
+```{r}
+A.per_dat_counts<-readRDS("./A.percula_counts.RDS")
+A.oce_dat_counts<-readRDS("./A.oce_dat_counts.RDS")
+A.o_transid_gid<-read_csv("A.ocellaris_transcript_id_gene_ids.csv",col_names = c("target_id","gene_id"))
+A.p_transid_gid<-read_csv("A.percula_transcript_id_gene_ids.csv",col_names = c("target_id","gene_id"))
+
+left_join(A.per_dat_counts,A.p_transid_gid,"target_id") ->A.per_data
+left_join(A.oce_dat_counts,A.o_transid_gid,"target_id") ->A.oce_data
+
+sialic_acids<-read_csv("./Sialic_acids.csv")
+metabolism<-read_csv("./Metabolism_gene_set.csv")
+```
+
+## format datasets
+```{r}
+#for ocellaris
+groups<-factor(c(rep("zero_hr",3),
+                 rep("Twenty_four_hrs_no_anemone",3),
+                 rep("Twenty_four_hrs_with_anemone",3),
+                 rep("Forty_eight_hrs_with_no_anemone",3),
+                 rep("Forty_eight_hrs_with_anemone",3)))
+
+A.oce_data %>% select(-target_id) %>% reshape2::melt() %>% filter(gene_id == "ENSAOCG00000004761.1")
+```
+
+
+```{r}
+A.oce_dat_counts %>% group_by(target_id) %>% summarise()
+
+```
