@@ -12,7 +12,8 @@ library(edgeR)
 library(DESeq2)
 ```
 
-```{r,message=FALSE,eval=F}
+```{r,message=FALSE,eval=F} 
+#### chunk is outdated. Look at local version ####
 rbind(read_tsv("../results_skin/T0I1_L4/abundance.tsv") %>% select(target_id,est_counts) %>% mutate(sample="0hr_1"),
 read_tsv("../results_skin/T0I2_L3/abundance.tsv") %>% select(target_id,est_counts) %>% mutate(sample="0hr_2"),
 read_tsv("../results_skin/T0I3_L3/abundance.tsv") %>% select(target_id,est_counts) %>% mutate(sample="0hr_3"),
@@ -37,8 +38,8 @@ d<-A.oce_dat %>% column_to_rownames('target_id')
 
 #Run from here
 ```{r}
-d<-readRDS("./A.oce_dat.RDS")
-A.oce_dat_counts<-readRDS("./A.oce_dat_counts.RDS")
+d<-readRDS("./A.oce_dat_gene_id.RDS")
+A.oce_dat_counts<-readRDS("./A.oce_dat_counts_gene_id.RDS")
 ```
 
 ### PCA

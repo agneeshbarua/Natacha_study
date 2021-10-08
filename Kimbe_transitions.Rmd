@@ -14,6 +14,7 @@ library(DESeq2)
 ```
 
 ```{r,eval=F}
+#### chunk is outdated. Look at local version ####
 rbind(read_tsv("../results/SSPN7_S1/abundance.tsv") %>% select(target_id,est_counts) %>% mutate(sample="SS_1"),
 read_tsv("../results/SSPN8_S1/abundance.tsv") %>% select(target_id,est_counts) %>% mutate(sample="SS_2"),
 read_tsv("../results/SSPN9_S1/abundance.tsv") %>% select(target_id,est_counts) %>% mutate(sample="SS_3"),
@@ -37,8 +38,8 @@ d %>% saveRDS("../results/A.percula_dat.csv")
 
 #Run from here
 ```{r}
-d<-readRDS("./A.percula_dat.RDS")
-A.perula_dat<-readRDS("./A.percula_counts.RDS")
+d<-readRDS("./A.percula_dat_gene_id.RDS")
+A.perula_dat<-readRDS("./A.percula_counts_gene_id.RDS")
 ```
 
 
