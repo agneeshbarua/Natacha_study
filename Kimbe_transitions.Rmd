@@ -68,9 +68,9 @@ groups<-factor(c(rep("SS",3),
                  rep("HH",3),
                  rep("SH",3),
                  rep("HS",3)))
-dge<-DGEList(A.perula_dat %>% column_to_rownames("target_id"), 
+dge<-DGEList(A.perula_dat %>% column_to_rownames("gene_id"), 
              group = groups, 
-             genes = A.perula_dat$target_id)
+             genes = A.perula_dat$gene_id)
 dge
 ```
 
@@ -113,9 +113,10 @@ plotQLDisp(fit)
 ## Differential expression analysis
 Only SS-SH, HH-HS, (SS-SH)-(HH-HS) possible
 ```{r}
-con<-makeContrasts(HH-HS, levels = design)
+con<-makeContrasts(SS-HH, levels = design)
 qlf<- glmQLFTest(fit,contrast=con)
 topTags(qlf) %>% view
+#qlf$table %>% saveRDS("./SSSH_HHHS_comp.RDS")
 #topTags(qlf) %>% as.data.frame() %>%  write_csv("./SS_SH_HH_HS_contrast.csv")
 
 ```

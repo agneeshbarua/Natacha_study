@@ -69,9 +69,9 @@ groups<-factor(c(rep("zero_hr",3),
                  rep("Twenty_four_hrs_with_anemone",3),
                  rep("Forty_eight_hrs_with_no_anemone",3),
                  rep("Forty_eight_hrs_with_anemone",3)))
-dge<-DGEList(A.oce_dat_counts %>% column_to_rownames("target_id"), 
+dge<-DGEList(A.oce_dat_counts %>% column_to_rownames("gene_id"), 
              group = groups, 
-             genes = A.oce_dat_counts$target_id)
+             genes = A.oce_dat_counts$gene_id)
 dge
 ```
 
@@ -113,9 +113,11 @@ plotQLDisp(fit)
 
 ## Differential expression analysis
 ```{r}
-con<-makeContrasts(zero_hr-Forty_eight_hrs_with_anemone, levels = design)
+con<-makeContrasts(Twenty_four_hrs_no_anemone-Forty_eight_hrs_with_anemone, levels = design)
 qlf<- glmQLFTest(fit,contrast=con)
 topTags(qlf) %>% view
+qlf$table %>% saveRDS("./zero_24hr_anemone_comp.RDS")
+
 #topTags(qlf,n = 32450) %>% as.data.frame() %>%  write_csv("./0hr_48hr_anemone_contrast.csv")
 ```
 ###### QLF-test
@@ -136,7 +138,6 @@ plotMD(tr)
 ```{r,eval=F}
 
 con2<-makeContrasts( +zero_hr-Twenty_four_hrs_with_anemone,
-                     +zero_hr-Forty_eight_hrs_with_no_anemone,
                      +zero_hr-Forty_eight_hrs_with_anemone,
                     levels = design) #compares each group to venom gland
 
