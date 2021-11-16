@@ -10,8 +10,8 @@ library(tidyverse)
 ```
 
 ```{r}
-A.per_dat_counts<-readRDS("./A.percula_counts_gene_id.RDS")
-A.oce_dat_counts<-readRDS("./A.oce_dat_counts_gene_id.RDS")
+A.per_dat_counts<-readRDS("./A.percula_tpm_gene_id.RDS")
+A.oce_dat_counts<-readRDS("./A.oce_dat_tpm_gene_id.RDS")
 sialic_acids<-read_csv("./Sialic_acids.csv")
 metabolism<-read_csv("./Metabolism_gene_set.csv")
 
