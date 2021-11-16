@@ -1,0 +1,153 @@
+---
+title: "Experiment"
+author: "Agneesh Barua"
+date: "6/24/2021"
+output: html_document
+---
+```{r,message=F}
+library(tidyverse)
+library(janitor)
+library(ellipse)
+library(edgeR)
+library(DESeq2)
+```
+
+```{r,message=FALSE,eval=F} 
+#### chunk is outdated. Look at local version ####
+rbind(read_tsv("../results_skin/T0I1_L4/abundance.tsv") %>% select(target_id,est_counts) %>% mutate(sample="0hr_1"),
+read_tsv("../results_skin/T0I2_L3/abundance.tsv") %>% select(target_id,est_counts) %>% mutate(sample="0hr_2"),
+read_tsv("../results_skin/T0I3_L3/abundance.tsv") %>% select(target_id,est_counts) %>% mutate(sample="0hr_3"),
+read_tsv("../results_skin/T1B1I1_L4/abundance.tsv") %>% select(target_id,est_counts) %>% mutate(sample="24hr_no_anemone_1"),
+read_tsv("../results_skin/T1B1I2_L3/abundance.tsv") %>% select(target_id,est_counts) %>% mutate(sample="24hr_no_anoemone_2"),
+read_tsv("../results_skin/T1B1I3_L3/abundance.tsv") %>% select(target_id,est_counts) %>% mutate(sample="24hr_no_anemone_3"),
+read_tsv("../results_skin/T1B2I1_L4/abundance.tsv") %>% select(target_id,est_counts) %>% mutate(sample="24hr_with_anemone_1"),
+read_tsv("../results_skin/T1B2I2_L3/abundance.tsv") %>% select(target_id,est_counts) %>% mutate(sample="24hr_with_anemone_2"),
+read_tsv("../results_skin/T1B2I3_L3/abundance.tsv") %>% select(target_id,est_counts) %>% mutate(sample="24hr_with_anemone_3"),
+read_tsv("../results_skin/T2B1I1_L4/abundance.tsv") %>% select(target_id,est_counts) %>% mutate(sample="48hr_with_no_anemone_1"),
+read_tsv("../results_skin/T2B1I2_L3/abundance.tsv") %>% select(target_id,est_counts) %>% mutate(sample="48hr_with_no_anemone_2"),
+read_tsv("../results_skin/T2B1I3_L3/abundance.tsv") %>% select(target_id,est_counts) %>% mutate(sample="48hr_with_no_anemone_3"),
+read_tsv("../results_skin/T2B2I1_L4/abundance.tsv") %>% select(target_id,est_counts) %>% mutate(sample="48hr_with_anemone_1"),
+read_tsv("../results_skin/T2B2I2_L3/abundance.tsv") %>% select(target_id,est_counts) %>% mutate(sample="48hr_with_anemone_2"),
+read_tsv("../results_skin/T2B2I3_L3/abundance.tsv") %>% select(target_id,est_counts) %>% mutate(sample="48hr_with_anemone_3")) %>% spread(sample,est_counts)->A.oce_dat
+A.oce_dat->A.oce_dat_counts
+d<-A.oce_dat %>% column_to_rownames('target_id')
+#d %>% saveRDS("../results_skin/A.oce_dat.RDS")
+#A.oce_dat_counts %>% saveRDS("../results_skin/A.oce_dat_counts.RDS")
+#GGally::ggpairs(log10(d+1))
+```
+
+#Run from here
+```{r}
+d<-readRDS("./A.oce_dat_gene_id.RDS")
+A.oce_dat_counts<-readRDS("./A.oce_dat_counts_gene_id.RDS")
+```
+
+### PCA
+```{r}
+d <- d[sort(rowSums(d, na.rm = T), decreasing = T, index.return = T)[[2]][1:5000],]
+d <- log(d+1) %>% t() %>% dist()
+fit <- MASS::isoMDS(d, k=2)
+plotDat <- data.frame(x = fit$points[,1], y = fit$points[,2], sample = c(rep("0hr",3),rep("24hr_no_anemone",3),rep("24hr_with_anemone",3),rep("48hrs_with_no_anemone",3),rep("48hrs_with_anemone",3)))
+                                                                      
+
+centroids <- aggregate(cbind(x,y) ~ sample, plotDat, mean)
+conf.rgn  <- do.call(rbind, lapply(unique(plotDat$sample), function(t)
+  data.frame(sample = as.character(t),
+             ellipse(cov(plotDat[plotDat$sample == t, 1:2]),
+                     centre=as.matrix(centroids[centroids$sample == t,2:3]),
+                     level=0.95),
+             stringsAsFactors=FALSE)))
+
+tp2 <- ggplot(plotDat, aes(x,y,color = sample)) + geom_point(size=3) + theme_bw() + geom_path(data=conf.rgn) + xlab("NMDS Axis 1") + ylab("NMDS Axis 2")+ theme(legend.position = 'bottom')
+tp2
+```
+
+### DGE object
+```{r}
+groups<-factor(c(rep("zero_hr",3),
+                 rep("Twenty_four_hrs_no_anemone",3),
+                 rep("Twenty_four_hrs_with_anemone",3),
+                 rep("Forty_eight_hrs_with_no_anemone",3),
+                 rep("Forty_eight_hrs_with_anemone",3)))
+dge<-DGEList(A.oce_dat_counts %>% column_to_rownames("gene_id"), 
+             group = groups, 
+             genes = A.oce_dat_counts$gene_id)
+dge
+```
+
+#### Preprosessing
+```{r}
+keep<- filterByExpr(dge, min.count = 5)                 
+summary(keep)
+dge<- dge[keep,,keep.lib.sizes = F]
+```
+
+Normalise using TMM: Done for removing compositional bias
+```{r}
+dge<-calcNormFactors(dge, method = "TMM")
+dge$samples
+```
+
+```{r}
+plotMD(cpm(dge, log = T),column =4)
+plotMDS(dge)
+```
+
+
+#### Estimate dispersion {.tabset .tabset-fade}
+```{r}
+#to estimate dispersions with multiple factors we donstruct a design matrix. 0+ means not to include an intercept
+design <- model.matrix(~0+group, dge$samples)
+colnames(design)<-levels(dge$samples$group)
+dge<-estimateDisp(dge, design, robust = T)
+dge$common.dispersion
+plotBCV(dge)
+```
+
+#### Determining quasi liklihood 
+```{r}
+fit<-glmQLFit(dge, design, robust = T)
+head(fit$coefficients)
+plotQLDisp(fit)
+```
+
+## Differential expression analysis
+```{r}
+con<-makeContrasts(Twenty_four_hrs_no_anemone-Forty_eight_hrs_with_anemone, levels = design)
+qlf<- glmQLFTest(fit,contrast=con)
+topTags(qlf) %>% view
+qlf$table %>% saveRDS("./zero_24hr_anemone_comp.RDS")
+
+#topTags(qlf,n = 32450) %>% as.data.frame() %>%  write_csv("./0hr_48hr_anemone_contrast.csv")
+```
+###### QLF-test
+```{r}
+summary(decideTests(qlf))
+plotMD(qlf)
+```
+###### 1.2 log fold change
+```{r}
+#get genes that have a log fold change of 1.2
+tr<-glmTreat(fit,contrast = con, lfc = log2(1.2))
+summary(decideTests(tr))
+plotMD(tr)
+```
+
+## ANOVA-like testing 
+## `` `r table('DE genes')` `` {.tabset .tabset-fade}
+```{r,eval=F}
+
+con2<-makeContrasts( +zero_hr-Twenty_four_hrs_with_anemone,
+                     +zero_hr-Forty_eight_hrs_with_anemone,
+                    levels = design) #compares each group to venom gland
+
+anov<-glmQLFTest(fit, contrast = con2)
+
+gene_id<-rownames(anov$genes)
+desc<-anov$genes$genes
+
+#Filter out dignificantly differentially expressed genes
+anov$table %>% mutate(genes=gene_id, description=desc) %>% filter(PValue<0.05) %>% view #%>%write.csv("./DE_anova_hrt_liv_kid_vg.csv")
+```
+
+
