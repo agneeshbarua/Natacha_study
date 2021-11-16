@@ -38,8 +38,8 @@ d<-A.oce_dat %>% column_to_rownames('target_id')
 
 #Run from here
 ```{r}
-d<-readRDS("./A.oce_dat_gene_id.RDS")
-A.oce_dat_counts<-readRDS("./A.oce_dat_counts_gene_id.RDS")
+d<-readRDS("../RDS_files/A.oce_dat_gene_id.RDS")
+A.oce_dat_counts<-readRDS("../RDS_files/A.oce_dat_counts_gene_id.RDS")
 ```
 
 ### PCA
@@ -150,4 +150,61 @@ desc<-anov$genes$genes
 anov$table %>% mutate(genes=gene_id, description=desc) %>% filter(PValue<0.05) %>% view #%>%write.csv("./DE_anova_hrt_liv_kid_vg.csv")
 ```
 
+```{r}
+library(ggfortify)
+var_dat<-A.oce_dat_counts %>% column_to_rownames("gene_id") %>% dplyr::select(!c("0hr_1","0hr_2","0hr_3"))
+g<-tibble(id = c(rep("24hr_no_anemone",3),rep("24hr_wth_anemone",3),rep("48hr_with_anemone",3),rep("48hr_no_anemone",3)))
+
+se<-SummarizedExperiment(vst(as.matrix(round(var_dat)),fitType = 'mean'),colData = g$id)
+
+rv <- rowVars(assay(se))
+select <- order(rv, decreasing=TRUE)[seq_len(min(1000, length(rv)))]
+pca <- prcomp(t(assay(se)[select,]))
+percentVar <- pca$sdev^2 / sum( pca$sdev^2 )
+
+
+ pca$x %>% as_tibble %>% select(PC1,PC2) %>% mutate(s = g$id) %>% ggplot(aes(PC1,PC2,color = s))+
+  geom_point(size = 4)+
+  scale_color_ucscgb()+
+  xlab(paste0("PC1 (", round(percentVar[1]*100),"%)"))+
+  ylab(paste0("PC2 (", round(percentVar[2]*100),"%)"))+
+  theme_bw() ->aoce_1000_12
+ 
+ pca$x %>% as_tibble %>% select(PC2,PC3) %>% mutate(s = g$id) %>% ggplot(aes(PC2,PC3,color = s))+
+  geom_point(size = 4)+
+  scale_color_ucscgb()+
+  xlab(paste0("PC2 (", round(percentVar[2]*100),"%)"))+
+  ylab(paste0("PC3 (", round(percentVar[3]*100),"%)"))+
+  theme_bw() ->aoce_1000_23
+
+
+ 
+#With Sialic acig genes
+sia<-read_csv("../sialic_Aoce_genes.csv",col_names = c("symbol","genes"))
+var_dat<-A.oce_dat_counts %>% separate(gene_id,c("gene_id"),extra = 'drop') %>% filter(gene_id %in% sia$genes)%>% column_to_rownames("gene_id") %>% dplyr::select(!c("0hr_1","0hr_2","0hr_3"))
+g<-tibble(id = c(rep("24hr_no_anemone",3),rep("24hr_wth_anemone",3),rep("48hr_with_anemone",3),rep("48hr_no_anemone",3)))
+
+se<-SummarizedExperiment(varianceStabilizingTransformation(as.matrix(round(var_dat)),fitType = 'mean'),colData = g$id)
+
+rv <- rowVars(assay(se))
+select <- order(rv, decreasing=TRUE)[seq_len(min(1000, length(rv)))]
+pca <- prcomp(t(assay(se)[select,]))
+percentVar <- pca$sdev^2 / sum( pca$sdev^2 )
+
+
+ pca$x %>% as_tibble %>% select(PC1,PC2) %>% mutate(s = g$id) %>% ggplot(aes(PC1,PC2,color = s))+
+  geom_point(size = 4)+
+  scale_color_ucscgb()+
+  xlab(paste0("PC1 (", round(percentVar[1]*100),"%)"))+
+  ylab(paste0("PC2 (", round(percentVar[2]*100),"%)"))+
+  theme_bw() ->aoce_sia_12
+ 
+ pca$x %>% as_tibble %>% select(PC2,PC3) %>% mutate(s = g$id) %>% ggplot(aes(PC2,PC3,color = s))+
+  geom_point(size = 4)+
+  scale_color_ucscgb()+
+  xlab(paste0("PC2 (", round(percentVar[2]*100),"%)"))+
+  ylab(paste0("PC3 (", round(percentVar[3]*100),"%)"))+
+  theme_bw() ->aoce_sia_23
+
+```
 
