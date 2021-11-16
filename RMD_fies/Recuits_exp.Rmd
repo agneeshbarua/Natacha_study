@@ -13,7 +13,7 @@ library(edgeR)
 library(DESeq2)
 ```
 
-```{r}
+```{r,eval=F}
 A.p<-read_csv("../A.percula_transcript_id_gene_ids.csv",col_names = c("target_id","gene_id"))
 rbind(read_tsv("../results/SSPN5_S1_r_St/abundance.tsv") %>% select(target_id,est_counts) %>% left_join(A.p) %>% group_by(gene_id) %>% summarise(est_counts = sum(est_counts)) %>% mutate(sample="St_1"),
 read_tsv("../results/SSPN6_S1_r_St/abundance.tsv") %>% select(target_id,est_counts) %>% left_join(A.p) %>% group_by(gene_id) %>% summarise(est_counts = sum(est_counts)) %>% mutate(sample="St_2"),
@@ -28,6 +28,7 @@ recruits_dat %>% saveRDS("../results/recruits_gene_id.RDS")
 ```
 
 ```{r}
+d<-readRDS("../RDS_files/recruits_gene_id.RDS") %>% column_to_rownames('gene_id')
 d <- d[sort(rowSums(d, na.rm = T), decreasing = T, index.return = T)[[2]][1:5000],]
 d <- log(d+1) %>% t() %>% dist()
 fit <- MASS::isoMDS(d, k=2)
@@ -47,6 +48,7 @@ tp2
 ```
 
 ```{r}
+recruits_dat<-readRDS("../RDS_files/recruits_gene_id.RDS")
 groups<-factor(c(rep("Ht",3),
                  rep("St",3)))
 dge<-DGEList(recruits_dat %>% column_to_rownames("gene_id"), 
