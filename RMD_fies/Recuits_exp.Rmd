@@ -192,7 +192,7 @@ d %>% ggplot(aes(logFC,-log10(FDR),col = diffexp,label = symbol))+
 ```{r}
 library(ggfortify)
 var_dat<-recruits_dat %>% column_to_rownames("gene_id")
-g<-tibble(id = c("Ht_1","Ht_2","Ht_3","St_1","St_2","St_3"))
+g<-tibble(id = c(rep("Ht",3),rep("St",3)))
 
 se<-SummarizedExperiment(vst(as.matrix(round(var_dat)),fitType = 'mean'),colData = g$id)
 
@@ -220,7 +220,7 @@ percentVar <- pca$sdev^2 / sum( pca$sdev^2 )
 ```{r}
 #Met
 var_dat<-recruits_dat %>% separate(gene_id,c("gene_id"),extra = 'drop') %>% filter(gene_id %in% met$genes) %>% column_to_rownames("gene_id")
-g<-tibble(id = c("Ht_1","Ht_2","Ht_3","St_1","St_2","St_3"))
+g<-tibble(id = c(rep("Ht",3),rep("St",3)))
 
 se<-SummarizedExperiment(varianceStabilizingTransformation(as.matrix(round(var_dat))),colData = g$id)
 
@@ -250,7 +250,7 @@ gridExtra::grid.arrange(met_pc12,met_pc23,nrow = 2)
 ```{r}
 #Ops
 var_dat<-recruits_dat %>% separate(gene_id,c("gene_id"),extra = 'drop') %>% filter(gene_id %in% ops$genes) %>% column_to_rownames("gene_id")
-g<-tibble(id = c("Ht_1","Ht_2","Ht_3","St_1","St_2","St_3"))
+g<-tibble(id = c(rep("Ht",3),rep("St",3)))
 
 se<-SummarizedExperiment(varianceStabilizingTransformation(as.matrix(round(var_dat))),colData = g$id)
 
@@ -280,7 +280,7 @@ gridExtra::grid.arrange(ops_pc12,ops_pc23,nrow = 2)
 ```{r}
 #corts
 var_dat<-recruits_dat %>% separate(gene_id,c("gene_id"),extra = 'drop') %>% filter(gene_id %in% corts$genes) %>% column_to_rownames("gene_id")
-g<-tibble(id = c("Ht_1","Ht_2","Ht_3","St_1","St_2","St_3"))
+g<-tibble(id = c(rep("Ht",3),rep("St",3)))
 
 se<-SummarizedExperiment(varianceStabilizingTransformation(as.matrix(round(var_dat))),colData = g$id)
 
@@ -310,7 +310,7 @@ gridExtra::grid.arrange(corts_pc12,corts_pc23,nrow = 2)
 ```{r}
 #th
 var_dat<-recruits_dat %>% separate(gene_id,c("gene_id"),extra = 'drop') %>% filter(gene_id %in% th$genes) %>% column_to_rownames("gene_id")
-g<-tibble(id = c("Ht_1","Ht_2","Ht_3","St_1","St_2","St_3"))
+g<-tibble(id = c(rep("Ht",3),rep("St",3)))
 
 se<-SummarizedExperiment(varianceStabilizingTransformation(as.matrix(round(var_dat))),colData = g$id)
 
@@ -340,7 +340,7 @@ gridExtra::grid.arrange(th_pc12,th_pc23,nrow = 2)
 ```{r}
 #th
 var_dat<-recruits_dat %>% separate(gene_id,c("gene_id"),extra = 'drop') %>% filter(gene_id %in% sia$genes) %>% column_to_rownames("gene_id")
-g<-tibble(id = c("Ht_1","Ht_2","Ht_3","St_1","St_2","St_3"))
+g<-tibble(id = c(rep("Ht",3),rep("St",3)))
 
 se<-SummarizedExperiment(varianceStabilizingTransformation(as.matrix(round(var_dat))),colData = g$id)
 
